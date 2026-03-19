@@ -22,7 +22,7 @@ const STEP_LABELS = ["Joueurs", "Rôles", "Distribution"];
 
 export default function PlayersSetupPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const [savedPlayers, setSavedPlayers] = useState<Player[]>([]);
   const [players, setPlayers]       = useState<Player[]>([]);
   const [input, setInput]           = useState("");
@@ -281,13 +281,22 @@ const handleContinue = async () => {
             <p className="text-purple-200 text-xs font-medium">Étape 1 sur 3</p>
           </div>
 
-          <button
-            onClick={() => router.push("/lobby")}
-            className="ml-auto w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white text-lg transition-all"
-            title="Accueil"
-          >
-            🏠
-          </button>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => router.push("/lobby")}
+              className="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white text-lg transition-all"
+              title="Accueil"
+            >
+              🏠
+            </button>
+            <button
+              onClick={logout}
+              className="px-3 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white text-xs font-black transition-all"
+              title="Se deconnecter"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Stepper */}

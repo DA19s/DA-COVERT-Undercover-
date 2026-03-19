@@ -149,7 +149,7 @@ const handleLaunch = async () => {
       border: "border-emerald-200",
     },
     {
-      label: "Undercover",
+      label: "DA-COVERT",
       count: safeUnder,
       emoji: "🕵️",
       bg: "bg-rose-100",
@@ -247,12 +247,12 @@ const handleLaunch = async () => {
         <div className="bg-white rounded-3xl shadow-2xl p-5 space-y-5">
           <h2 className="font-black text-gray-800 text-base">Composition de la partie</h2>
 
-          {/* Undercover stepper */}
+          {/* DA-COVERT stepper */}
           <div className="flex items-center justify-between p-4 bg-rose-50 border-2 border-rose-100 rounded-2xl">
             <div className="flex items-center gap-3">
               <span className="text-3xl">🕵️</span>
               <div>
-                <p className="font-black text-gray-800 text-sm">Undercover</p>
+                <p className="font-black text-gray-800 text-sm">DA-COVERT</p>
                 <p className="text-gray-400 text-xs">Ils ont le mot caché</p>
               </div>
             </div>

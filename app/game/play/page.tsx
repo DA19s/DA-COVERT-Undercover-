@@ -46,7 +46,7 @@ const ROLE_CFG: Record<
     gradient: "from-emerald-500 to-teal-600",
   },
   Undercover: {
-    emoji: "🕵️", label: "Undercover",
+    emoji: "🕵️", label: "DA-COVERT",
     textColor: "text-rose-700", bg: "bg-rose-100", border: "border-rose-200",
     gradient: "from-rose-500 to-pink-600",
   },
@@ -77,7 +77,7 @@ const WIN_CFG: Record<Winner, { emoji: string; title: string; desc: string; grad
   },
   undercover: {
     emoji: "🕵️",
-    title: "Victoire des Undercovers !",
+    title: "Victoire des DA-COVERT !",
     desc: "Les espions ont semé la confusion. Les civils sont trop isolés pour résister...",
     gradient: "from-rose-500 to-pink-600",
   },
@@ -92,7 +92,7 @@ const WIN_CFG: Record<Winner, { emoji: string; title: string; desc: string; grad
 // ─── Page principale ──────────────────────────────────────────────────────────
 export default function GamePlayPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const [gameId, setGameId]                       = useState<string | null>(null);
   const [civilWord, setCivilWord]                 = useState("");
@@ -820,6 +820,13 @@ export default function GamePlayPage() {
               title="Accueil"
             >
               🏠
+            </button>
+            <button
+              onClick={logout}
+              className="px-3 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white text-xs font-black transition-all"
+              title="Se deconnecter"
+            >
+              Logout
             </button>
           </div>
         </div>

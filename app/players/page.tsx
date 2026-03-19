@@ -13,7 +13,7 @@ type PlayerRow = {
 
 export default function PlayersPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -148,13 +148,22 @@ export default function PlayersPage() {
             </div>
           </div>
 
-          <button
-            onClick={() => router.push("/lobby")}
-            className="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white text-lg transition-all"
-            title="Accueil"
-          >
-            🏠
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push("/lobby")}
+              className="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white text-lg transition-all"
+              title="Accueil"
+            >
+              🏠
+            </button>
+            <button
+              onClick={logout}
+              className="px-3 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white text-xs font-black transition-all"
+              title="Se deconnecter"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-3xl shadow-2xl p-5 space-y-4">

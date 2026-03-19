@@ -113,7 +113,7 @@ function VerifyPageContent() {
             📨
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none">
-            Under<span className="text-yellow-300">cover</span>
+            DA-<span className="text-yellow-300">COVERT</span>
           </h1>
           <p className="text-purple-200 mt-2 text-base sm:text-lg font-medium">
             Vérifie ton email !

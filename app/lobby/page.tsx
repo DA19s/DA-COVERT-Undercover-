@@ -7,7 +7,7 @@ import { useAuth } from "@/context/authContext";
 
 export default function LobbyPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   type PlayerRow = { id: string; nickname: string; total_points: number };
   type HistoryRow = {
@@ -352,8 +352,12 @@ export default function LobbyPage() {
               <p className="text-white font-black text-sm">{user?.username}</p>
             </div>
           </div>
-          <button className="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-xl transition-all">
-            ⚙️
+          <button
+            onClick={logout}
+            className="px-3 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white text-xs font-black transition-all"
+            title="Se deconnecter"
+          >
+            Logout
           </button>
         </div>
 
@@ -366,7 +370,7 @@ export default function LobbyPage() {
             🎭
           </div>
           <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight leading-none drop-shadow-lg">
-            Under<span className="text-yellow-300">cover</span>
+            DA-<span className="text-yellow-300">COVERT</span>
           </h1>
           <p className="text-purple-200 mt-3 text-base font-medium">
             Qui bluffera le mieux ? 🤫

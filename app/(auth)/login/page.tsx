@@ -87,7 +87,7 @@ export default function LoginPage() {
             🕵️
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none">
-            Under<span className="text-yellow-300">cover</span>
+            DA-<span className="text-yellow-300">COVERT</span>
           </h1>
           <p className="text-purple-200 mt-2 text-base sm:text-lg font-medium">
             T'es qui toi ?&nbsp;👀
@@ -127,9 +127,9 @@ export default function LoginPage() {
                 <label className="text-sm font-bold text-gray-600">
                   🔑 Mot de passe
                 </label>
-                <a href="#" className="text-xs text-violet-500 hover:text-violet-700 font-medium transition-colors">
+                <Link href="/forgot-password" className="text-xs text-violet-500 hover:text-violet-700 font-medium transition-colors">
                   Oublié ? 😅
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <input

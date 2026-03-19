@@ -26,7 +26,7 @@ const ROLE_CONFIG: Record<Role, {
   },
   Undercover: {
     bg: "from-rose-500 to-pink-600",
-    emoji: "🕵️", label: "Undercover",
+    emoji: "🕵️", label: "DA-COVERT",
     desc: "Tu as un mot similaire. Blende-toi parmi les civils !",
   },
   "Mister White": {
