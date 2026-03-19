@@ -438,7 +438,14 @@ export default function LobbyPage() {
               onClick={addPlayer}
               className="px-4 py-3 rounded-2xl bg-white text-violet-700 font-black active:scale-95 transition-all disabled:opacity-40"
             >
-              {playersLoading ? "..." : "+ Ajouter"}
+              {playersLoading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-violet-300 border-t-violet-700 rounded-full animate-spin" />
+                  Chargement
+                </span>
+              ) : (
+                "+ Ajouter"
+              )}
             </button>
           </div>
 
@@ -513,7 +520,10 @@ export default function LobbyPage() {
             Historique
           </h2>
           {historyLoading ? (
-            <p className="text-white/50 text-sm">Chargement…</p>
+            <div className="flex items-center gap-2 text-white/50 text-sm">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Chargement…</span>
+            </div>
           ) : history.length === 0 ? (
             <p className="text-white/50 text-sm">Aucune session terminée.</p>
           ) : (

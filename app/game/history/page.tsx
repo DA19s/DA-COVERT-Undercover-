@@ -228,7 +228,7 @@ export default function GameHistoryPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center">
         <div className="text-white text-center">
-          <div className="text-6xl mb-4 animate-pulse">📚</div>
+          <div className="w-12 h-12 mx-auto mb-4 border-4 border-white/30 border-t-white rounded-full animate-spin" />
           <p className="font-black text-xl">Chargement…</p>
         </div>
       </div>

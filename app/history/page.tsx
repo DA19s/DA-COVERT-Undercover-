@@ -129,7 +129,10 @@ export default function HistoryPage() {
           )}
 
           {isLoading ? (
-            <p className="text-white/60 text-sm">Chargement...</p>
+            <div className="flex items-center gap-2 text-white/60 text-sm">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Chargement...</span>
+            </div>
           ) : sessions.length === 0 ? (
             <p className="text-white/50 text-sm">Aucune session terminee.</p>
           ) : (

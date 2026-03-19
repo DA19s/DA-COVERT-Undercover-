@@ -106,7 +106,10 @@ export default function GamePlayPage() {
   const [winner, setWinner]                       = useState<Winner | null>(null);
   const [roundOrder, setRoundOrder]               = useState<string[]>([]);
   const [loading, setLoading]                     = useState(true);
-  const [terminating, setTerminating]           = useState(false);
+  const [terminating, setTerminating]             = useState(false);
+  const [eliminating, setEliminating]             = useState(false);
+  const [progressing, setProgressing]             = useState(false);
+  const [replaying, setReplaying]                 = useState(false);
 
   // ── Helper mélange ────────────────────────────────────────────────────────────
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
@@ -253,58 +256,73 @@ export default function GamePlayPage() {
 
   // ── Actions ───────────────────────────────────────────────────────────────────
   const handleEliminate = async () => {
-    if (!selectedId || !gameId) return;
+    if (!selectedId || !gameId || eliminating) return;
     const player = allPlayers.find(p => p.id === selectedId);
     if (!player) return;
 
-    await supabase
-      .from("active_game_players")
-      .update({ is_alive: false })
-      .eq("id", selectedId);
+    try {
+      setEliminating(true);
+      await supabase
+        .from("active_game_players")
+        .update({ is_alive: false })
+        .eq("id", selectedId);
 
-    const updated = allPlayers.map(p =>
-      p.id === selectedId ? { ...p, is_alive: false } : p
-    );
-    setAllPlayers(updated);
-    setEliminatedPlayer(player);
-    setSelectedId(null);
-    setPhase("reveal");
+      const updated = allPlayers.map(p =>
+        p.id === selectedId ? { ...p, is_alive: false } : p
+      );
+      setAllPlayers(updated);
+      setEliminatedPlayer(player);
+      setSelectedId(null);
+      setPhase("reveal");
+    } finally {
+      setEliminating(false);
+    }
   };
 
-  const handleAfterReveal = () => {
+  const handleAfterReveal = async () => {
+    if (progressing) return;
     if (!eliminatedPlayer) return;
     if (eliminatedPlayer.role === "Mister White") {
       setGuessInput("");
       setGuessResult(null);
       setPhase("mw_guess");
     } else {
+      setProgressing(true);
       const w = checkWin(allPlayers);
       if (w) triggerGameOver(w);
-      else   goNextRound();
+      else   await goNextRound();
+      setProgressing(false);
     }
   };
 
-  const handleMWGuess = () => {
+  const handleMWGuess = async () => {
+    if (progressing) return;
     const guess  = guessInput.trim().toLowerCase();
     const target = civilWord.trim().toLowerCase();
     if (!guess) return;
 
+    setProgressing(true);
     if (guess === target) {
-      triggerGameOver("misterwhite");
+      await triggerGameOver("misterwhite");
+      setProgressing(false);
     } else {
       setGuessResult("wrong");
       const w = checkWin(allPlayers);
-      setTimeout(() => {
-        if (w) triggerGameOver(w);
-        else   goNextRound();
+      setTimeout(async () => {
+        if (w) await triggerGameOver(w);
+        else   await goNextRound();
+        setProgressing(false);
       }, 2000);
     }
   };
 
-  const handleMWPass = () => {
+  const handleMWPass = async () => {
+    if (progressing) return;
+    setProgressing(true);
     const w = checkWin(allPlayers);
-    if (w) triggerGameOver(w);
-    else   goNextRound();
+    if (w) await triggerGameOver(w);
+    else   await goNextRound();
+    setProgressing(false);
   };
 
   const goNextRound = async () => {
@@ -401,6 +419,8 @@ export default function GamePlayPage() {
   };
 
   const handleReplay = () => {
+    if (replaying) return;
+    setReplaying(true);
     try {
       localStorage.removeItem("dacovert_gameover");
       localStorage.setItem("dacovert_play_started", "true");
@@ -530,7 +550,7 @@ export default function GamePlayPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center">
         <div className="text-white text-center">
-          <div className="text-6xl mb-4 animate-pulse">🎮</div>
+          <div className="w-12 h-12 mx-auto mb-4 border-4 border-white/30 border-t-white rounded-full animate-spin" />
           <p className="font-black text-xl">Chargement de la partie...</p>
         </div>
       </div>
@@ -620,16 +640,31 @@ export default function GamePlayPage() {
           <div className="flex flex-col gap-3 pb-4 sm:flex-row">
             <button
               onClick={handleReplay}
-              className="flex-1 bg-white text-gray-900 font-black py-4 rounded-2xl active:scale-95 transition-all shadow-lg"
+              disabled={replaying}
+              className="flex-1 bg-white text-gray-900 font-black py-4 rounded-2xl active:scale-95 transition-all shadow-lg disabled:opacity-70"
             >
-              Rejouer 🔄
+              {replaying ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
+                  Rejouer...
+                </span>
+              ) : (
+                "Rejouer 🔄"
+              )}
             </button>
             <button
               onClick={handleTerminate}
               className="flex-1 bg-white/20 border border-white/30 text-white font-black py-4 rounded-2xl active:scale-95 transition-all"
               disabled={terminating}
             >
-              Terminer 🏁
+              {terminating ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Terminaison...
+                </span>
+              ) : (
+                "Terminer 🏁"
+              )}
             </button>
             <button
               onClick={() => router.push("/lobby")}
@@ -670,9 +705,17 @@ export default function GamePlayPage() {
 
             <button
               onClick={handleAfterReveal}
+              disabled={progressing}
               className="w-full bg-white text-gray-900 font-black py-4 rounded-2xl active:scale-95 transition-all mt-5"
             >
-              {eliminatedPlayer.role === "Mister White" ? "Passer à la devinette →" : "Continuer →"}
+              {progressing ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
+                  Chargement...
+                </span>
+              ) : (
+                eliminatedPlayer.role === "Mister White" ? "Passer à la devinette →" : "Continuer →"
+              )}
             </button>
           </div>
         </div>
@@ -714,16 +757,24 @@ export default function GamePlayPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={handleMWPass}
+                    disabled={progressing}
                     className="flex-1 border-2 border-gray-200 text-gray-500 font-bold py-4 rounded-2xl active:scale-95 transition-all"
                   >
-                    Passer →
+                    {progressing ? "..." : "Passer →"}
                   </button>
                   <button
                     onClick={handleMWGuess}
-                    disabled={!guessInput.trim()}
+                    disabled={!guessInput.trim() || progressing}
                     className="flex-1 bg-gradient-to-r from-slate-500 to-gray-600 disabled:opacity-40 text-white font-black py-4 rounded-2xl active:scale-95 transition-all"
                   >
-                    Deviner ✅
+                    {progressing ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        Verification...
+                      </span>
+                    ) : (
+                      "Deviner ✅"
+                    )}
                   </button>
                 </div>
               </>
@@ -778,10 +829,17 @@ export default function GamePlayPage() {
 
             <button
               onClick={handleEliminate}
-              disabled={!selectedId}
+              disabled={!selectedId || eliminating}
               className="w-full bg-gradient-to-r from-red-500 to-rose-600 disabled:opacity-40 active:scale-95 text-white font-black py-4 rounded-2xl transition-all"
             >
-              {selectedPlayer ? `Éliminer ${selectedPlayer.nickname} ✕` : "Sélectionne un joueur"}
+              {eliminating ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Elimination...
+                </span>
+              ) : (
+                selectedPlayer ? `Éliminer ${selectedPlayer.nickname} ✕` : "Sélectionne un joueur"
+              )}
             </button>
           </div>
         </div>

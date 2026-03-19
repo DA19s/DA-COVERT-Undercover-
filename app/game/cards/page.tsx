@@ -61,10 +61,14 @@ export default function CardsPage() {
   const [currentIdx, setCurrent] = useState(0);
   const [phase, setPhase] = useState<Phase>("handoff");
   const [selectedCard, setSelected] = useState<number | null>(null);
+  const [initLoading, setInitLoading] = useState(true);
+  const [confirming, setConfirming] = useState(false);
+  const [startingGame, setStartingGame] = useState(false);
 
   // 1. Initialisation : On récupère les mots et on génère les cartes
   useEffect(() => {
   const initGame = async () => {
+    setInitLoading(true);
     const raw = localStorage.getItem("dacovert_setup");
     if (!raw) {
       router.replace("/game/setup/players");
@@ -207,6 +211,8 @@ export default function CardsPage() {
 
     } catch (e) {
       console.error("Crash dans initGame:", e);
+    } finally {
+      setInitLoading(false);
     }
   };
 
@@ -218,52 +224,68 @@ export default function CardsPage() {
 
   // 2. Action : Valider son choix et enregistrer en BDD
   const handleConfirm = async () => {
-    if (selectedCard === null || !currentPlayer || !gameId) return;
+    if (selectedCard === null || !currentPlayer || !gameId || confirming) return;
 
-    const card = cards[selectedCard];
+    try {
+      setConfirming(true);
+      const card = cards[selectedCard];
 
-    // INSERTION dans active_game_players (On fige le rôle en BDD maintenant)
-    const { error } = await supabase.from("active_game_players").insert({
-      game_id: gameId,
-      player_id: currentPlayer.id,
-      role: card.role,
-      assigned_word: card.word || null,
-      speak_order: currentIdx + 1,
-      is_alive: true,
-    });
+      // INSERTION dans active_game_players (On fige le rôle en BDD maintenant)
+      const { error } = await supabase.from("active_game_players").insert({
+        game_id: gameId,
+        player_id: currentPlayer.id,
+        role: card.role,
+        assigned_word: card.word || null,
+        speak_order: currentIdx + 1,
+        is_alive: true,
+      });
 
-    if (error) {
-      console.error("Erreur BDD:", error);
-      return;
-    }
+      if (error) {
+        console.error("Erreur BDD:", error);
+        return;
+      }
 
-    // Sauvegarde du rôle réellement tiré → source de vérité pour /game/play
-    const savedRoles: Record<string, Role> = JSON.parse(
-      localStorage.getItem("dacovert_roles") || "{}"
-    );
-    savedRoles[currentPlayer.id] = card.role;
-    localStorage.setItem("dacovert_roles", JSON.stringify(savedRoles));
+      // Sauvegarde du rôle réellement tiré → source de vérité pour /game/play
+      const savedRoles: Record<string, Role> = JSON.parse(
+        localStorage.getItem("dacovert_roles") || "{}"
+      );
+      savedRoles[currentPlayer.id] = card.role;
+      localStorage.setItem("dacovert_roles", JSON.stringify(savedRoles));
 
-    // Mise à jour locale
-    setCards(prev => prev.map(c => c.index === selectedCard ? { ...c, takenBy: currentPlayer.id } : c));
-    setSelected(null);
+      // Mise à jour locale
+      setCards(prev => prev.map(c => c.index === selectedCard ? { ...c, takenBy: currentPlayer.id } : c));
+      setSelected(null);
 
-    if (currentIdx + 1 >= players.length) {
-      setPhase("done");
-    } else {
-      setCurrent(prev => prev + 1);
-      setPhase("handoff");
+      if (currentIdx + 1 >= players.length) {
+        setPhase("done");
+      } else {
+        setCurrent(prev => prev + 1);
+        setPhase("handoff");
+      }
+    } finally {
+      setConfirming(false);
     }
   };
 
   const handleStartGame = async () => {
+    if (startingGame) return;
+    setStartingGame(true);
     // Marque le fait qu'on a commencé la phase jeu : si l'utilisateur revient ensuite sur /game/cards,
     // on doit complètement relancer l'attribution (nouveaux mots + nouveaux tirages).
     localStorage.setItem("dacovert_play_started", "true");
     router.push("/game/play");
   };
 
-  if (!players.length || !cards.length) return null;
+  if (initLoading || !players.length || !cards.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="w-12 h-12 mx-auto mb-4 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+          <p className="font-black text-xl">Chargement des cartes...</p>
+        </div>
+      </div>
+    );
+  }
 
   const cfg = revealedCard ? ROLE_CONFIG[revealedCard.role] : null;
 
@@ -286,9 +308,17 @@ export default function CardsPage() {
 
             <button
               onClick={handleConfirm}
+              disabled={confirming}
               className="w-full bg-white text-gray-900 font-black py-4 rounded-2xl active:scale-95 transition-all"
             >
-              C'est noté !
+              {confirming ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
+                  Validation...
+                </span>
+              ) : (
+                "C'est noté !"
+              )}
             </button>
           </div>
         </div>
@@ -339,8 +369,15 @@ export default function CardsPage() {
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-6">
             <span className="text-8xl">🚀</span>
             <h2 className="text-white text-3xl font-black">Prêts pour le crime ?</h2>
-            <button onClick={handleStartGame} className="w-full bg-green-400 py-5 rounded-3xl font-black text-white text-xl shadow-lg">
-              Lancer la partie
+            <button onClick={handleStartGame} disabled={startingGame} className="w-full bg-green-400 py-5 rounded-3xl font-black text-white text-xl shadow-lg disabled:opacity-70">
+              {startingGame ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Lancement...
+                </span>
+              ) : (
+                "Lancer la partie"
+              )}
             </button>
           </div>
         )}

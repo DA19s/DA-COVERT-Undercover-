@@ -13,6 +13,7 @@ export default function RolesSetupPage() {
   const [setup, setSetup] = useState<Setup | null>(null);
   const [nbUndercover, setNbUnder] = useState(1);
   const [nbMisterWhite, setNbMisterWhite] = useState(0);
+  const [launching, setLaunching] = useState(false);
 
   useEffect(() => {
     const raw = localStorage.getItem("dacovert_setup");
@@ -59,7 +60,9 @@ export default function RolesSetupPage() {
   };
 
 const handleLaunch = async () => {
+  if (launching) return;
   try {
+    setLaunching(true);
     const raw = localStorage.getItem("dacovert_setup");
     if (!raw) return;
     
@@ -136,6 +139,8 @@ const handleLaunch = async () => {
   } catch (err) {
     console.error("Détails de l'erreur:", err);
     alert("Erreur lors du lancement. Vérifie ta connexion.");
+  } finally {
+    setLaunching(false);
   }
 };
 
@@ -342,10 +347,20 @@ const handleLaunch = async () => {
         {/* Lancer */}
         <button
           onClick={handleLaunch}
+          disabled={launching}
           className="w-full bg-white hover:bg-gray-50 active:scale-95 text-violet-700 font-black text-lg py-5 rounded-3xl transition-all shadow-xl shadow-purple-900/20 flex items-center justify-center gap-3"
         >
-          <span className="text-2xl">🃏</span>
-          Lancer la distribution !
+          {launching ? (
+            <>
+              <span className="w-5 h-5 border-2 border-violet-300 border-t-violet-700 rounded-full animate-spin" />
+              Lancement...
+            </>
+          ) : (
+            <>
+              <span className="text-2xl">🃏</span>
+              Lancer la distribution !
+            </>
+          )}
         </button>
       </div>
     </div>

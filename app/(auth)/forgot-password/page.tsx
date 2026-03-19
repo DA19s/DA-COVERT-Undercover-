@@ -137,7 +137,14 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 active:scale-95 text-white font-black text-base sm:text-lg py-4 rounded-2xl transition-all shadow-lg shadow-purple-200 disabled:opacity-60"
               >
-                {loading ? "Envoi..." : "Envoyer le code"}
+                {loading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    Envoi...
+                  </span>
+                ) : (
+                  "Envoyer le code"
+                )}
               </button>
             </form>
           ) : (
@@ -182,7 +189,14 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 active:scale-95 text-white font-black text-base sm:text-lg py-4 rounded-2xl transition-all shadow-lg shadow-purple-200 disabled:opacity-60"
               >
-                {loading ? "Verification..." : "Reinitialiser le mot de passe"}
+                {loading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    Verification...
+                  </span>
+                ) : (
+                  "Reinitialiser le mot de passe"
+                )}
               </button>
             </form>
           )}

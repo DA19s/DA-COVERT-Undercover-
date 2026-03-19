@@ -194,7 +194,10 @@ export default function PlayersPage() {
           {error && <p className="text-xs text-red-500 font-medium -mt-2">{error}</p>}
 
           {isLoading ? (
-            <p className="text-sm text-gray-400">Chargement...</p>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <span className="w-4 h-4 border-2 border-gray-300 border-t-violet-500 rounded-full animate-spin" />
+              <span>Chargement...</span>
+            </div>
           ) : players.length === 0 ? (
             <div className="text-center py-8 text-gray-300">
               <div className="text-5xl mb-2">👥</div>

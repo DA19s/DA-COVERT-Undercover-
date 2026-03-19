@@ -29,6 +29,8 @@ export default function PlayersSetupPage() {
   const [showImport, setShowImport] = useState(false);
   const [selected, setSelected]     = useState<Set<string>>(new Set());
   const [error, setError]           = useState("");
+  const [addingPlayer, setAddingPlayer] = useState(false);
+  const [continuing, setContinuing] = useState(false);
 
   useEffect(() => {
     const fetchSavedPlayers = async () => {
@@ -47,6 +49,7 @@ export default function PlayersSetupPage() {
     }, [user, authLoading]);
 
   const addPlayer = async () => {
+    if (addingPlayer) return;
     const nickname = input.trim();
     if (!nickname) return;
     if (players.some(p => p.nickname.toLowerCase() === nickname.toLowerCase())) {
@@ -59,6 +62,7 @@ export default function PlayersSetupPage() {
     }
 
     try {
+      setAddingPlayer(true);
       const { data, error: dbError } = await supabase
       .from("players")
       .select("id, nickname, total_points")
@@ -93,13 +97,15 @@ export default function PlayersSetupPage() {
         setPlayers((prev) => [...prev, newPlayer])
 
       }
-      } catch (error: any) {
-        // Remplace ta console.error par ceci pour voir le message de Postgres
-        console.error("VRAIE ERREUR :", error); 
-        setError(error.message || "Erreur en base de donnée");
-      }
-    setInput("");
-    setError("");
+      setInput("");
+      setError("");
+    } catch (error: any) {
+      // Remplace ta console.error par ceci pour voir le message de Postgres
+      console.error("VRAIE ERREUR :", error);
+      setError(error.message || "Erreur en base de donnée");
+    } finally {
+      setAddingPlayer(false);
+    }
   };
 
   const removePlayer = (id: string) =>
@@ -124,9 +130,10 @@ export default function PlayersSetupPage() {
   };
 
 const handleContinue = async () => {
-    if (!canContinue || !user) return;
+    if (!canContinue || !user || continuing) return;
 
     try {
+      setContinuing(true);
 
       const { data: allWords, error: wordError } = await supabase
         .from("words")
@@ -194,10 +201,23 @@ const handleContinue = async () => {
     } catch (err: any) {
       console.error("VRAIE ERREUR DETECTEE :", err);
       setError(err.message || "Erreur lors de l'initialisation.");
+    } finally {
+      setContinuing(false);
     }
   };
 
   const canContinue = players.length >= 3;
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="w-12 h-12 mx-auto mb-4 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+          <p className="font-black text-xl">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 flex flex-col">
@@ -343,9 +363,14 @@ const handleContinue = async () => {
             <button
               type="button"
               onClick={addPlayer}
+              disabled={addingPlayer}
               className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 active:scale-95 rounded-2xl text-white text-2xl font-black flex items-center justify-center shadow-md transition-all"
             >
-              +
+              {addingPlayer ? (
+                <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              ) : (
+                "+"
+              )}
             </button>
           </div>
           {error && <p className="text-xs text-red-500 font-medium -mt-2">{error}</p>}
@@ -396,10 +421,17 @@ const handleContinue = async () => {
         {/* Continuer */}
         <button
           onClick={handleContinue}
-          disabled={!canContinue}
+          disabled={!canContinue || continuing}
           className="w-full bg-white hover:bg-gray-50 active:scale-95 disabled:opacity-40 text-violet-700 font-black text-lg py-4 rounded-3xl transition-all shadow-xl shadow-purple-900/20 flex items-center justify-center gap-2"
         >
-          Continuer →
+          {continuing ? (
+            <>
+              <span className="w-5 h-5 border-2 border-violet-300 border-t-violet-700 rounded-full animate-spin" />
+              Chargement...
+            </>
+          ) : (
+            "Continuer →"
+          )}
         </button>
 
         {!canContinue && (
