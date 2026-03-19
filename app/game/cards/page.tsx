@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
+import { getWordsWithCache } from "@/lib/words-cache";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Player = { id: string; nickname: string }; // On utilise nickname comme dans ton setup
@@ -118,13 +119,7 @@ export default function CardsPage() {
             .single();
 
           // 2) Nouveau duo de mots (si possible différent de l'ancien)
-          const { data: allWords, error: wordError } = await supabase
-            .from("words")
-            .select("civil_word, undercover_word");
-
-          if (wordError || !allWords || allWords.length === 0) {
-            throw wordError || new Error("La table 'words' est vide ou introuvable");
-          }
+          const allWords = await getWordsWithCache();
 
           const filteredPairs = allWords.filter(
             (w) =>

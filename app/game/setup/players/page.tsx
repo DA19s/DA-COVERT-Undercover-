@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { useAuth } from "@/context/authContext";
 import { useState, useEffect } from "react";
+import { getWordsWithCache } from "@/lib/words-cache";
 /*
 // TODO: remplacer par SELECT * FROM players WHERE owner_id = auth.uid()
 const MOCK_SAVED_PLAYERS = [
@@ -135,14 +136,7 @@ const handleContinue = async () => {
     try {
       setContinuing(true);
 
-      const { data: allWords, error: wordError } = await supabase
-        .from("words")
-        .select("civil_word, undercover_word");
-
-      if (wordError) throw wordError;
-      if (!allWords || allWords.length === 0) {
-        throw new Error("La table 'words' est vide ! Remplis-la d'abord.");
-      }
+      const allWords = await getWordsWithCache();
 
       const randomPair = allWords[Math.floor(Math.random() * allWords.length)];
 
