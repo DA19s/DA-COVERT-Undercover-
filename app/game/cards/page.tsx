@@ -21,17 +21,17 @@ const ROLE_CONFIG: Record<Role, {
   bg: string; emoji: string; label: string; desc: string;
 }> = {
   Civil: {
-    bg: "from-emerald-500 to-teal-600",
+    bg: "from-violet-500 to-purple-600",
     emoji: "👤", label: "Civil",
     desc: "Tu connais le mot. Décris-le sans le dire !",
   },
   Undercover: {
-    bg: "from-rose-500 to-pink-600",
+    bg: "from-violet-500 to-purple-600",
     emoji: "🕵️", label: "DA-COVERT",
     desc: "Tu as un mot similaire. Blende-toi parmi les civils !",
   },
   "Mister White": {
-    bg: "from-slate-500 to-gray-600",
+    bg: "from-violet-500 to-purple-600",
     emoji: "👻", label: "Mister White",
     desc: "Tu n'as aucun mot. Écoute et improvise !",
   },
